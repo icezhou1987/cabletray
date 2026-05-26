@@ -3,236 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>桥架弯头计算器</title>
+    <title>基本测试</title>
     <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f23; color: #eaeaea; padding: 20px; }
-        h1 { color: #e94560; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .input-section, .result-section { background: #1a1a2e; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #2a2a4e; }
-        input, select { padding: 8px; background: #0f0f23; border: 1px solid #2a2a4e; color: white; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        button { background: #e94560; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #ff6b6b; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px; }
-        .result-card { background: #16213e; padding: 20px; border-radius: 8px; text-align: center; }
-        .result-value { font-size: 24px; font-weight: bold; font-family: 'Courier New', monospace; }
-        .result-card.primary { background: linear-gradient(135deg, #e94560, #c23a50); }
-        .canvas-container { width: 100%; height: 500px; background: #0a0a1a; border-radius: 8px; margin-top: 20px; }
+        body { background: #0f0f23; color: #eaeaea; padding: 20px; font-family: system-ui; }
+        .test { padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid #4ade80; }
+        .error { background: rgba(233, 69, 96, 0.1); color: #e94560; border: 1px solid #e94560; }
+        .info { background: rgba(96, 165, 250, 0.1); color: #60a5fa; border: 1px solid #60a5fa; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>桥架弯头计算器</h1>
-        
-        <div class="input-section">
-            <h2>参数输入</h2>
-            <div class="form-row">
-                <div>
-                    <label>弯头类型：</label>
-                    <select id="elbowType">
-                        <option value="horizontal90">水平90°弯头</option>
-                        <option value="horizontal45">水平45°弯头</option>
-                        <option value="vertical90up">垂直90°上弯</option>
-                    </select>
-                </div>
-                <div>
-                    <label>桥架宽度 (mm)：</label>
-                    <input type="number" id="width" value="200" min="50" max="1200">
-                </div>
-                <div>
-                    <label>桥架高度 (mm)：</label>
-                    <input type="number" id="height" value="100" min="50" max="400">
-                </div>
-                <div>
-                    <label>弯曲半径 (mm)：</label>
-                    <input type="number" id="radius" value="300" min="100" max="1000">
-                </div>
-            </div>
-            <button onclick="calculate()">计算</button>
-            <button onclick="reset()">重置</button>
-        </div>
-        
-        <div class="result-section">
-            <h2>计算结果</h2>
-            <div class="result-grid">
-                <div class="result-card primary">
-                    <div>展开长度</div>
-                    <div class="result-value" id="unfoldLength">-</div>
-                    <div>mm</div>
-                </div>
-                <div class="result-card">
-                    <div>切割位置</div>
-                    <div class="result-value" id="cutPosition">-</div>
-                    <div>mm</div>
-                </div>
-                <div class="result-card">
-                    <div>中心弧长</div>
-                    <div class="result-value" id="arcLength">-</div>
-                    <div>mm</div>
-                </div>
-                <div class="result-card">
-                    <div>切割角度</div>
-                    <div class="result-value" id="cutAngle">-</div>
-                    <div>°</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="input-section">
-            <h2>3D预览</h2>
-            <div class="canvas-container" id="canvas-container">
-                <div id="canvas-placeholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:#a0a0b0;">
-                    加载3D视图...
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <h1>基本功能测试</h1>
+    
+    <div class="test info" id="test1">测试1: 页面加载...</div>
+    <div class="test info" id="test2">测试2: JavaScript执行...</div>
+    <div class="test info" id="test3">测试3: DOM操作...</div>
+    <div class="test info" id="test4">测试4: 计算功能...</div>
+    
     <script>
-const ELBOW_TYPES = {
-    horizontal90: { angle: 90, plane: 'horizontal' },
-    horizontal45: { angle: 45, plane: 'horizontal' },
-    vertical90up: { angle: 90, plane: 'vertical' }
-};
+document.getElementById('test1').textContent = '✅ 测试1: 页面加载成功';
+document.getElementById('test1').className = 'test success';
 
-let scene, camera, renderer, controls;
-let elbowMesh = null;
-
-function calculate() {
-    const type = document.getElementById('elbowType').value;
-    const w = parseInt(document.getElementById('width').value);
-    const h = parseInt(document.getElementById('height').value);
-    const r = parseInt(document.getElementById('radius').value);
-    const elbow = ELBOW_TYPES[type];
-    const angle = elbow.angle;
-    const angleRad = (angle * Math.PI) / 180;
+try {
+    document.getElementById('test2').textContent = '✅ 测试2: JavaScript执行成功';
+    document.getElementById('test2').className = 'test success';
     
-    const unfoldLength = angleRad * r;
-    const halfAngleRad = angleRad / 2;
-    const cutPosition = w - (r * Math.tan(halfAngleRad));
-    const arcLength = angleRad * r;
-    const cutAngle = 90 - (angle / 2);
+    var newDiv = document.createElement('div');
+    newDiv.textContent = 'DOM操作成功';
+    newDiv.className = 'test success';
+    document.body.appendChild(newDiv);
+    document.getElementById('test3').textContent = '✅ 测试3: DOM操作成功';
+    document.getElementById('test3').className = 'test success';
     
-    document.getElementById('unfoldLength').textContent = unfoldLength.toFixed(2);
-    document.getElementById('cutPosition').textContent = cutPosition.toFixed(2);
-    document.getElementById('arcLength').textContent = arcLength.toFixed(2);
-    document.getElementById('cutAngle').textContent = cutAngle.toFixed(1);
+    var result = 2 + 3;
+    document.getElementById('test4').textContent = '✅ 测试4: 计算功能成功 (2 + 3 = ' + result + ')';
+    document.getElementById('test4').className = 'test success';
     
-    if (typeof THREE !== 'undefined') {
-        update3D({ width: w, height: h, radius: r, angle, plane: elbow.plane });
-    }
+} catch(e) {
+    document.getElementById('test2').textContent = '❌ 测试失败: ' + e.message;
+    document.getElementById('test2').className = 'test error';
+    console.error(e);
 }
-
-function reset() {
-    document.getElementById('width').value = 200;
-    document.getElementById('height').value = 100;
-    document.getElementById('radius').value = 300;
-    document.getElementById('unfoldLength').textContent = '-';
-    document.getElementById('cutPosition').textContent = '-';
-    document.getElementById('arcLength').textContent = '-';
-    document.getElementById('cutAngle').textContent = '-';
-    if (elbowMesh && scene) scene.remove(elbowMesh);
-}
-
-function init3D() {
-    if (typeof THREE === 'undefined') return;
-    
-    const container = document.getElementById('canvas-container');
-    if (!container) return;
-    
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a1a);
-    
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
-    camera.position.set(600, 400, 600);
-    
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.getElementById('canvas-placeholder').remove();
-    container.appendChild(renderer.domElement);
-    
-    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambient);
-    
-    const directional = new THREE.DirectionalLight(0xffffff, 0.8);
-    directional.position.set(500, 800, 500);
-    scene.add(directional);
-    
-    const grid = new THREE.GridHelper(1200, 30, 0x2a2a4e, 0x1a1a2e);
-    grid.position.y = -200;
-    scene.add(grid);
-    
-    animate();
-}
-
-function update3D(params) {
-    if (!scene) return;
-    
-    if (elbowMesh) scene.remove(elbowMesh);
-    
-    const group = new THREE.Group();
-    const scale = 0.5;
-    const w = params.width * scale;
-    const h = params.height * scale;
-    const r = params.radius * scale;
-    const a = (params.angle * Math.PI) / 180;
-    const segments = Math.max(16, Math.floor(params.angle / 2));
-    
-    const material = new THREE.MeshStandardMaterial({
-        color: 0x8a9ba8,
-        metalness: 0.8,
-        roughness: 0.3
-    });
-    
-    for (let i = 0; i < segments; i++) {
-        const t1 = (i / segments) * a;
-        const t2 = ((i + 1) / segments) * a;
-        
-        const innerR = r - w / 2;
-        const outerR = r + w / 2;
-        
-        const shape = new THREE.Shape();
-        shape.moveTo(innerR * Math.cos(t1), innerR * Math.sin(t1));
-        shape.lineTo(outerR * Math.cos(t1), outerR * Math.sin(t1));
-        shape.lineTo(outerR * Math.cos(t2), outerR * Math.sin(t2));
-        shape.lineTo(innerR * Math.cos(t2), innerR * Math.sin(t2));
-        shape.closePath();
-        
-        const geometry = new THREE.ExtrudeGeometry(shape, {
-            steps: 1,
-            depth: h,
-            bevelEnabled: false
-        });
-        
-        if (params.plane === 'vertical') {
-            geometry.rotateX(-Math.PI / 2);
-        }
-        
-        const mesh = new THREE.Mesh(geometry, material);
-        if (params.plane === 'vertical') {
-            mesh.rotation.z = Math.PI / 2;
-        }
-        group.add(mesh);
-    }
-    
-    elbowMesh = group;
-    scene.add(elbowMesh);
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-    if (elbowMesh) elbowMesh.rotation.y += 0.005;
-    if (renderer) renderer.render(scene, camera);
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    init3D();
-    calculate();
-});
     </script>
 </body>
 </html>

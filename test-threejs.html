@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试ThreeJS</title>
+    <style>
+        body { background: #0f0f23; color: #fff; font-family: Arial; }
+        #out { padding: 20px; }
+        .s { color: green; }
+        .e { color: red; }
+        #c { width: 500px; height: 400px; background: #0a0a1a; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div id="out">Loading...</div>
+    <div id="c"></div>
+
+    <script>
+function p(msg, cls) {
+    var d = document.createElement('div');
+    d.className = cls || '';
+    d.textContent = msg;
+    document.getElementById('out').appendChild(d);
+    console.log(msg);
+}
+
+var s = document.createElement('script');
+s.src = 'https://unpkg.com/three@0.150.1/build/three.min.js?' + Math.random();
+s.onload = function() {
+    p('THREE loaded: ' + typeof THREE, 's');
+    
+    try {
+        var scene = new THREE.Scene();
+        p('Scene created', 's');
+        
+        var cam = new THREE.PerspectiveCamera(75, 500/400, 0.1, 1000);
+        cam.position.z = 3;
+        p('Camera created', 's');
+        
+        var ren = new THREE.WebGLRenderer();
+        ren.setSize(500, 400);
+        ren.setClearColor(0x0a0a1a);
+        document.getElementById('c').appendChild(ren.domElement);
+        p('Renderer created', 's');
+        
+        var geo = new THREE.BoxGeometry(1,1,1);
+        var mat = new THREE.MeshBasicMaterial({color: 0xff0000});
+        var cube = new THREE.Mesh(geo, mat);
+        scene.add(cube);
+        p('Cube added to scene', 's');
+        
+        ren.render(scene, cam);
+        p('Rendered!', 's');
+        
+    } catch(e) {
+        p('Error: ' + e.message, 'e');
+        console.error(e);
+    }
+};
+s.onerror = function() { p('Load failed', 'e'); };
+document.head.appendChild(s);
+    </script>
+</body>
+</html>

@@ -3,11 +3,19 @@ const ThreeViewer = (function() {
     let elbowGroup = null;
     let autoRotate = false;
     let animationId = null;
+    let isInitialized = false;
+    let pendingResult = null;
 
     function init(containerId) {
         const container = document.getElementById(containerId);
         if (!container) {
             console.error('Container not found');
+            return;
+        }
+
+        if (typeof THREE === 'undefined') {
+            console.error('THREE is not defined');
+            showError(container, 'Three.js库未加载');
             return;
         }
 
@@ -19,79 +27,140 @@ const ThreeViewer = (function() {
             }
         } catch (e) {
             console.warn('WebGL not available, 3D view disabled');
-            container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);text-align:center;padding:2rem;"><div><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin:0 auto 1rem;opacity:0.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><p>3D视图需要WebGL支持</p><p style="font-size:0.8rem;margin-top:0.5rem;">请在支持的浏览器中打开</p></div></div>';
+            showError(container, '3D视图需要WebGL支持');
             return;
         }
 
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a1a);
-        scene.fog = new THREE.Fog(0x0a0a1a, 800, 2000);
+        try {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            scene.fog = new THREE.Fog(0x0a0a1a, 800, 2000);
 
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        const aspect = width / height;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const aspect = width / height;
 
-        camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
-        camera.position.set(600, 400, 600);
+            camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
+            camera.position.set(600, 400, 600);
 
-        renderer = new THREE.WebGLRenderer({ 
-            antialias: true,
-            alpha: true
-        });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        container.appendChild(renderer.domElement);
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
 
-        if (typeof THREE.OrbitControls !== 'undefined') {
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.minDistance = 200;
-            controls.maxDistance = 2000;
-            controls.target.set(0, 0, 0);
+            if (typeof THREE.OrbitControls !== 'undefined') {
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.minDistance = 200;
+                controls.maxDistance = 2000;
+                controls.target.set(0, 0, 0);
+            }
+
+            setupLights();
+            createGrid();
+            createAxesHelper();
+
+            window.addEventListener('resize', onWindowResize);
+
+            isInitialized = true;
+            hideLoading();
+            animate();
+
+            if (pendingResult) {
+                updateElbow(pendingResult);
+                pendingResult = null;
+            }
+
+        } catch (e) {
+            console.error('Failed to initialize Three.js:', e);
+            showError(container, '初始化失败: ' + e.message);
         }
+    }
 
-        setupLights();
-        createGrid();
-        createAxesHelper();
-
-        window.addEventListener('resize', onWindowResize);
-
-        hideLoading();
-        animate();
+    function showError(container, message) {
+        container.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);text-align:center;padding:2rem;">
+                <div>
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin:0 auto 1rem;opacity:0.5">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <p>${message}</p>
+                    <p style="font-size:0.8rem;margin-top:0.5rem;">请在支持WebGL的浏览器中打开</p>
+                </div>
+            </div>
+        `;
     }
 
     function setupLights() {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambientLight);
+        if (!scene) {
+            console.error('setupLights: scene is undefined');
+            return;
+        }
+        
+        try {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            console.log('Added ambient light');
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(500, 800, 500);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        scene.add(directionalLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(500, 800, 500);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+            console.log('Added directional light');
 
-        const fillLight = new THREE.DirectionalLight(0x4a90e2, 0.3);
-        fillLight.position.set(-300, 400, -300);
-        scene.add(fillLight);
+            const fillLight = new THREE.DirectionalLight(0x4a90e2, 0.3);
+            fillLight.position.set(-300, 400, -300);
+            scene.add(fillLight);
+            console.log('Added fill light');
 
-        const backLight = new THREE.DirectionalLight(0xe94560, 0.2);
-        backLight.position.set(0, -300, -500);
-        scene.add(backLight);
+            const backLight = new THREE.DirectionalLight(0xe94560, 0.2);
+            backLight.position.set(0, -300, -500);
+            scene.add(backLight);
+            console.log('Added back light');
+        } catch (e) {
+            console.error('Error in setupLights:', e);
+        }
     }
 
     function createGrid() {
-        const gridHelper = new THREE.GridHelper(1200, 30, 0x2a2a4e, 0x1a1a2e);
-        gridHelper.position.y = -200;
-        scene.add(gridHelper);
+        if (!scene) {
+            console.error('createGrid: scene is undefined');
+            return;
+        }
+        
+        try {
+            const gridHelper = new THREE.GridHelper(1200, 30, 0x2a2a4e, 0x1a1a2e);
+            gridHelper.position.y = -200;
+            scene.add(gridHelper);
+            console.log('Added grid');
+        } catch (e) {
+            console.error('Error in createGrid:', e);
+        }
     }
 
     function createAxesHelper() {
-        const axesHelper = new THREE.AxesHelper(100);
-        scene.add(axesHelper);
+        if (!scene) {
+            console.error('createAxesHelper: scene is undefined');
+            return;
+        }
+        
+        try {
+            const axesHelper = new THREE.AxesHelper(100);
+            scene.add(axesHelper);
+            console.log('Added axes helper');
+        } catch (e) {
+            console.error('Error in createAxesHelper:', e);
+        }
     }
 
     function createMetalMaterial(color = 0x8a9ba8) {
@@ -266,16 +335,31 @@ const ThreeViewer = (function() {
     }
 
     function updateElbow(result) {
+        if (!isInitialized) {
+            if (result && result.success) {
+                pendingResult = result;
+            }
+            return;
+        }
+
+        if (!scene) {
+            console.error('Scene is not initialized');
+            return;
+        }
+
         if (elbowGroup) {
             scene.remove(elbowGroup);
             elbowGroup = null;
         }
 
         if (result && result.success) {
-            elbowGroup = createElbowMesh(result);
-            scene.add(elbowGroup);
-            
-            resetView();
+            try {
+                elbowGroup = createElbowMesh(result);
+                scene.add(elbowGroup);
+                resetView();
+            } catch (e) {
+                console.error('Failed to create elbow mesh:', e);
+            }
         }
     }
 

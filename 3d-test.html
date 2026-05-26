@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桥架弯头计算器 - 3D预览测试</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0f0f23; color: #eaeaea; margin: 0; padding: 20px; }
+        h1 { color: #e94560; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .panel { background: #1a1a2e; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .canvas-container { width: 100%; height: 400px; background: #0a0a1a; border-radius: 8px; position: relative; overflow: hidden; }
+        .canvas-container canvas { display: block; }
+        .status { padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+        .status.success { background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid #4ade80; }
+        .status.error { background: rgba(233, 69, 96, 0.1); color: #e94560; border: 1px solid #e94560; }
+        .controls { margin-bottom: 15px; }
+        button { background: #e94560; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #ff6b6b; }
+        input { padding: 8px; background: #0f0f23; border: 1px solid #2a2a4e; color: white; border-radius: 4px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>桥架弯头计算器 - 3D预览</h1>
+        
+        <div class="panel">
+            <div id="status" class="status">正在初始化Three.js...</div>
+            <div class="canvas-container" id="canvas"></div>
+            <div class="controls">
+                <input type="number" id="width" value="200" placeholder="宽度">
+                <input type="number" id="radius" value="300" placeholder="半径">
+                <button onclick="updateMesh()">更新</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+var scene, camera, renderer, mesh;
+var container;
+
+function init() {
+    container = document.getElementById('canvas');
+    
+    try {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a1a);
+        
+        var width = container.clientWidth;
+        var height = container.clientHeight;
+        
+        camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
+        camera.position.set(500, 300, 500);
+        
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        container.appendChild(renderer.domElement);
+        
+        var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(300, 500, 300);
+        scene.add(directionalLight);
+        
+        var gridHelper = new THREE.GridHelper(800, 20, 0x2a2a4e, 0x1a1a2e);
+        gridHelper.position.y = -100;
+        scene.add(gridHelper);
+        
+        createMesh();
+        
+        document.getElementById('status').className = 'status success';
+        document.getElementById('status').textContent = '✅ 3D视图加载成功';
+        
+        animate();
+        
+    } catch (e) {
+        console.error('Three.js Error:', e);
+        document.getElementById('status').className = 'status error';
+        document.getElementById('status').textContent = '❌ 错误: ' + e.message;
+    }
+}
+
+function createMesh() {
+    if (mesh) {
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
+    }
+    
+    var w = parseInt(document.getElementById('width').value) || 200;
+    var r = parseInt(document.getElementById('radius').value) || 300;
+    
+    var scale = 0.4;
+    var width = w * scale;
+    var radius = r * scale;
+    var angle = Math.PI / 2;
+    
+    var group = new THREE.Group();
+    var material = new THREE.MeshStandardMaterial({
+        color: 0x8a9ba8,
+        metalness: 0.8,
+        roughness: 0.3
+    });
+    
+    var segments = 16;
+    for (var i = 0; i < segments; i++) {
+        var t1 = (i / segments) * angle;
+        var t2 = ((i + 1) / segments) * angle;
+        
+        var innerR = radius - width / 2;
+        var outerR = radius + width / 2;
+        
+        var shape = new THREE.Shape();
+        shape.moveTo(innerR * Math.cos(t1), innerR * Math.sin(t1));
+        shape.lineTo(outerR * Math.cos(t1), outerR * Math.sin(t1));
+        shape.lineTo(outerR * Math.cos(t2), outerR * Math.sin(t2));
+        shape.lineTo(innerR * Math.cos(t2), innerR * Math.sin(t2));
+        shape.closePath();
+        
+        var geometry = new THREE.ExtrudeGeometry(shape, {
+            steps: 1,
+            depth: 50,
+            bevelEnabled: false
+        });
+        
+        var m = new THREE.Mesh(geometry, material);
+        group.add(m);
+    }
+    
+    mesh = group;
+    scene.add(mesh);
+}
+
+function updateMesh() {
+    if (scene) {
+        createMesh();
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    if (mesh) {
+        mesh.rotation.y += 0.005;
+    }
+    if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+window.addEventListener('resize', function() {
+    if (!renderer || !camera) return;
+    var width = container.clientWidth;
+    var height = container.clientHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+});
+    </script>
+</body>
+</html>

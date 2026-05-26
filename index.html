@@ -19,10 +19,48 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    
-    <link rel="stylesheet" href="styles.css">
+    <script>
+    function loadScript(url, callback) {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.onload = callback;
+        script.onerror = function() {
+            console.error('Failed to load script:', url);
+            if (callback) callback(new Error('Failed to load ' + url));
+        };
+        script.src = url;
+        document.head.appendChild(script);
+    }
+
+    var scriptsLoaded = 0;
+    var totalScripts = 2;
+
+    function onScriptLoaded() {
+        scriptsLoaded++;
+        if (scriptsLoaded >= totalScripts) {
+            console.log('All Three.js scripts loaded');
+            loadAppScripts();
+        }
+    }
+
+    function loadAppScripts() {
+        loadScript('calculator.js?v=3', function() {
+            loadScript('three-viewer.js?v=3', function() {
+                loadScript('app.js?v=3', function() {
+                    console.log('All app scripts loaded');
+                    if (typeof App !== 'undefined') {
+                        document.addEventListener('DOMContentLoaded', function() {
+                            App.init();
+                        });
+                    }
+                });
+            });
+        });
+    }
+
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', onScriptLoaded);
+    loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js', onScriptLoaded);
+</script>
 </head>
 <body>
     <div class="app-container">
@@ -409,8 +447,5 @@
         <span class="toast-message"></span>
     </div>
 
-    <script src="calculator.js?v=2"></script>
-    <script src="three-viewer.js?v=2"></script>
-    <script src="app.js?v=2"></script>
 </body>
 </html>
