@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试页面</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #1a1a2e;
+            color: #eaeaea;
+            padding: 20px;
+        }
+        .card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        h1 { color: #e94560; }
+        p { color: #a0a0b0; }
+        .result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ade80;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试页面</h1>
+    <p>这是一个纯HTML/CSS测试页面</p>
+    
+    <div class="card">
+        <h1>测试卡片</h1>
+        <p>这是卡片内容</p>
+        <div class="result">测试结果：成功</div>
+    </div>
+    
+    <p>当前时间: <span id="time"></span></p>
+    
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleTimeString();
+        console.log('脚本执行成功');
+    </script>
+</body>
+</html>
