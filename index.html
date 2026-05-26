@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="桥架弯头计算器 - 专业电气桥架弯头尺寸计算与3D可视化工具">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="桥架计算器">
+    
+    <title>桥架弯头计算器</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='10' y='40' width='80' height='20' rx='3' fill='%231a1a2e' stroke='%23e94560' stroke-width='3'/><path d='M60 30 Q90 30 90 60' stroke='%23e94560' stroke-width='8' fill='none'/></svg>">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" width="48" height="48">
+                        <rect x="10" y="35" width="80" height="30" rx="4" fill="var(--primary-color)" stroke="var(--accent-color)" stroke-width="3"/>
+                        <path d="M50 25 Q85 25 85 60" stroke="var(--accent-color)" stroke-width="6" fill="none"/>
+                        <line x1="25" y1="35" x2="25" y2="65" stroke="var(--text-secondary)" stroke-width="2"/>
+                        <line x1="40" y1="35" x2="40" y2="65" stroke="var(--text-secondary)" stroke-width="2"/>
+                        <line x1="60" y1="35" x2="60" y2="65" stroke="var(--text-secondary)" stroke-width="2"/>
+                        <line x1="75" y1="35" x2="75" y2="65" stroke="var(--text-secondary)" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="title-section">
+                    <h1>桥架弯头计算器</h1>
+                    <p class="subtitle">Cable Tray Elbow Calculator</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="installBtn" class="btn btn-icon" title="安装应用" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </button>
+                <button id="offlineIndicator" class="btn btn-icon offline" title="离线模式" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+                        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+                        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+                        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                        <line x1="12" y1="20" x2="12.01" y2="20"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <nav class="tab-navigation">
+            <button class="tab-btn active" data-tab="calculator">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="2" width="16" height="20" rx="2"/>
+                    <line x1="8" y1="6" x2="16" y2="6"/>
+                    <line x1="8" y1="10" x2="8" y2="10.01"/>
+                    <line x1="12" y1="10" x2="12" y2="10.01"/>
+                    <line x1="16" y1="10" x2="16" y2="10.01"/>
+                    <line x1="8" y1="14" x2="8" y2="14.01"/>
+                    <line x1="12" y1="14" x2="12" y2="14.01"/>
+                    <line x1="16" y1="14" x2="16" y2="14.01"/>
+                    <line x1="8" y1="18" x2="16" y2="18"/>
+                </svg>
+                <span>弯头计算</span>
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>历史记录</span>
+            </button>
+            <button class="tab-btn" data-tab="help">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>使用帮助</span>
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <section id="calculator" class="tab-content active">
+                <div class="content-grid">
+                    <div class="input-panel">
+                        <div class="panel-header">
+                            <h2>参数输入</h2>
+                            <button id="resetBtn" class="btn btn-secondary btn-sm">重置</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="elbowType">弯头类型</label>
+                            <select id="elbowType" class="form-control">
+                                <option value="horizontal90">水平90°弯头</option>
+                                <option value="horizontal45">水平45°弯头</option>
+                                <option value="horizontal30">水平30°弯头</option>
+                                <option value="vertical90up">垂直90°上弯</option>
+                                <option value="vertical90down">垂直90°下弯</option>
+                                <option value="vertical45up">垂直45°上弯</option>
+                                <option value="vertical45down">垂直45°下弯</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="trayWidth">桥架宽度 (mm)</label>
+                                <input type="number" id="trayWidth" class="form-control" value="200" min="50" max="1200" step="10">
+                                <input type="range" id="trayWidthRange" class="range-slider" value="200" min="50" max="1200" step="10">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="trayHeight">桥架高度 (mm)</label>
+                                <input type="number" id="trayHeight" class="form-control" value="100" min="50" max="400" step="10">
+                                <input type="range" id="trayHeightRange" class="range-slider" value="100" min="50" max="400" step="10">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bendRadius">弯曲半径 (mm)</label>
+                            <input type="number" id="bendRadius" class="form-control" value="300" min="100" max="1000" step="10">
+                            <p class="form-hint">建议: ≥ 桥架宽度 × 1.5</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="material">材质</label>
+                            <select id="material" class="form-control">
+                                <option value="steel">热镀锌钢</option>
+                                <option value="aluminum">铝合金</option>
+                                <option value="stainless">不锈钢</option>
+                                <option value="plastic">PVC</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="thickness">板材厚度 (mm)</label>
+                            <select id="thickness" class="form-control">
+                                <option value="1.0">1.0 mm</option>
+                                <option value="1.2" selected>1.2 mm</option>
+                                <option value="1.5">1.5 mm</option>
+                                <option value="2.0">2.0 mm</option>
+                            </select>
+                        </div>
+
+                        <button id="calculateBtn" class="btn btn-primary btn-block">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            开始计算
+                        </button>
+                    </div>
+
+                    <div class="viewer-panel">
+                        <div class="panel-header">
+                            <h2>3D预览</h2>
+                            <div class="viewer-controls">
+                                <button id="toggleRotate" class="btn btn-icon btn-sm" title="自动旋转">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M23 4v6h-6"/>
+                                        <path d="M1 20v-6h6"/>
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                    </svg>
+                                </button>
+                                <button id="resetView" class="btn btn-icon btn-sm" title="重置视角">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                        <polyline points="9 22 9 12 15 12 15 22"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="canvas3d" class="canvas-container">
+                            <div class="canvas-loading" id="loading3d">
+                                <div class="spinner"></div>
+                                <p>加载3D视图...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-section" id="resultsSection">
+                    <div class="panel-header">
+                        <h2>计算结果</h2>
+                        <div class="result-actions">
+                            <button id="copyResult" class="btn btn-secondary btn-sm">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                复制
+                            </button>
+                            <button id="saveHistory" class="btn btn-secondary btn-sm">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                    <polyline points="17 21 17 13 7 13 7 21"/>
+                                    <polyline points="7 3 7 8 15 8"/>
+                                </svg>
+                                保存
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-grid">
+                        <div class="result-card primary">
+                            <div class="result-label">展开长度</div>
+                            <div class="result-value" id="unfoldLength">-</div>
+                            <div class="result-unit">mm</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">切割位置</div>
+                            <div class="result-value" id="cutPosition">-</div>
+                            <div class="result-unit">mm</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">中心弧长</div>
+                            <div class="result-value" id="arcLength">-</div>
+                            <div class="result-unit">mm</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">切割角度</div>
+                            <div class="result-value" id="cutAngle">-</div>
+                            <div class="result-unit">°</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>详细参数</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">弯头角度:</span>
+                                <span class="detail-value" id="detailAngle">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">弯曲半径:</span>
+                                <span class="detail-value" id="detailRadius">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">桥架规格:</span>
+                                <span class="detail-value" id="detailSpec">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">材质:</span>
+                                <span class="detail-value" id="detailMaterial">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">板材厚度:</span>
+                                <span class="detail-value" id="detailThickness">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">估算重量:</span>
+                                <span class="detail-value" id="detailWeight">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cutting-section">
+                        <h3>切割说明</h3>
+                        <div class="cutting-diagram">
+                            <svg viewBox="0 0 400 300" class="cutting-svg">
+                                <defs>
+                                    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#8a9ba8"/>
+                                        <stop offset="50%" style="stop-color:#c0cdd7"/>
+                                        <stop offset="100%" style="stop-color:#8a9ba8"/>
+                                    </linearGradient>
+                                </defs>
+                                <rect x="20" y="80" width="360" height="140" fill="url(#metalGradient)" stroke="#1a1a2e" stroke-width="2"/>
+                                <line id="cutLine" x1="180" y1="80" x2="180" y2="220" stroke="#e94560" stroke-width="3" stroke-dasharray="10,5"/>
+                                <circle cx="180" cy="150" r="4" fill="#e94560"/>
+                                <text x="50" y="70" fill="var(--text-secondary)" font-size="14">起点</text>
+                                <text x="310" y="70" fill="var(--text-secondary)" font-size="14">终点</text>
+                                <text x="185" y="140" fill="var(--accent-color)" font-size="12">切割线</text>
+                                <text x="50" y="260" fill="var(--text-secondary)" font-size="11">弯头内侧</text>
+                                <text x="280" y="260" fill="var(--text-secondary)" font-size="11">弯头外侧</text>
+                                <line x1="20" y1="240" x2="360" y2="240" stroke="var(--text-secondary)" stroke-width="1"/>
+                                <text x="180" y="290" fill="var(--text-primary)" font-size="12" text-anchor="middle">展开示意图</text>
+                            </svg>
+                        </div>
+                        <div class="cutting-instructions">
+                            <div class="instruction-step">
+                                <span class="step-number">1</span>
+                                <span>按展开长度切割板材</span>
+                            </div>
+                            <div class="instruction-step">
+                                <span class="step-number">2</span>
+                                <span>在切割位置画切割线</span>
+                            </div>
+                            <div class="instruction-step">
+                                <span class="step-number">3</span>
+                                <span>按切割线切割弯头内侧</span>
+                            </div>
+                            <div class="instruction-step">
+                                <span class="step-number">4</span>
+                                <span>折弯并焊接接口</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="history" class="tab-content">
+                <div class="history-header">
+                    <h2>计算历史</h2>
+                    <button id="clearHistory" class="btn btn-secondary btn-sm">清空历史</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <p>暂无历史记录</p>
+                        <span>保存的计算将显示在这里</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="help" class="tab-content">
+                <div class="help-content">
+                    <h2>使用帮助</h2>
+                    
+                    <div class="help-section">
+                        <h3>功能介绍</h3>
+                        <p>桥架弯头计算器是一款专业的电气桥架弯头尺寸计算工具，帮助工程师快速计算弯头的展开长度、切割位置等关键参数，并提供3D可视化预览。</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>操作步骤</h3>
+                        <ol class="help-steps">
+                            <li>选择弯头类型（水平或垂直弯头）</li>
+                            <li>输入桥架的宽度和高度尺寸</li>
+                            <li>设置弯曲半径（系统会根据桥架宽度自动推荐）</li>
+                            <li>选择材质和板材厚度</li>
+                            <li>点击"开始计算"获取结果</li>
+                            <li>查看3D预览，旋转查看不同角度</li>
+                            <li>保存或复制计算结果</li>
+                        </ol>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>参数说明</h3>
+                        <dl class="help-definitions">
+                            <dt>桥架宽度</dt>
+                            <dd>桥架截面的水平宽度，单位为毫米(mm)。常见规格有100、150、200、300、400、500、600mm等。</dd>
+                            
+                            <dt>桥架高度</dt>
+                            <dd>桥架截面的垂直高度，单位为毫米(mm)。常见规格有50、75、100、150、200mm等。</dd>
+                            
+                            <dt>弯曲半径</dt>
+                            <dd>弯头中心线的弯曲半径。半径越大，弯头越平缓，但材料用量增加。建议不小于桥架宽度的1.5倍。</dd>
+                            
+                            <dt>展开长度</dt>
+                            <dd>弯头展开成直线时的总长度，用于材料下料计算。</dd>
+                            
+                            <dt>切割位置</dt>
+                            <dd>从弯头一端到切割线的距离，切割后折弯形成弯头。</dd>
+                        </dl>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>3D视图操作</h3>
+                        <ul class="help-tips">
+                            <li><strong>旋转:</strong> 鼠标左键拖拽</li>
+                            <li><strong>缩放:</strong> 鼠标滚轮</li>
+                            <li><strong>平移:</strong> 鼠标右键拖拽</li>
+                            <li><strong>自动旋转:</strong> 点击工具栏的旋转按钮</li>
+                            <li><strong>重置视角:</strong> 点击重置按钮</li>
+                        </ul>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>关于PWA</h3>
+                        <p>本应用支持PWA（渐进式网页应用）功能：</p>
+                        <ul class="help-tips">
+                            <li>点击安装按钮可安装到桌面或主屏幕</li>
+                            <li>安装后可离线使用</li>
+                            <li>像原生应用一样快速启动</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>© 2024 桥架弯头计算器 v1.0.0</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast">
+        <span class="toast-message"></span>
+    </div>
+
+    <script src="calculator.js"></script>
+    <script src="three-viewer.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

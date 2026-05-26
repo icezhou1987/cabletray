@@ -1,0 +1,27 @@
+{
+  "name": "桥架弯头计算器",
+  "short_name": "桥架计算器",
+  "description": "专业电气桥架弯头尺寸计算与3D可视化工具",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f23",
+  "theme_color": "#1a1a2e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='64' fill='%231a1a2e'/><rect x='56' y='196' width='400' height='120' rx='16' fill='%2316213e' stroke='%23e94560' stroke-width='8'/><path d='M280 140 Q440 140 440 256' stroke='%23e94560' stroke-width='24' fill='none'/><line x1='120' y1='196' x2='120' y2='316' stroke='%23a0a0b0' stroke-width='6'/><line x1='200' y1='196' x2='200' y2='316' stroke='%23a0a0b0' stroke-width='6'/><line x1='320' y1='196' x2='320' y2='316' stroke='%23a0a0b0' stroke-width='6'/><line x1='392' y1='196' x2='392' y2='316' stroke='%23a0a0b0' stroke-width='6'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%231a1a2e'/><rect x='20' y='72' width='152' height='48' rx='8' fill='%2316213e' stroke='%23e94560' stroke-width='4'/><path d='M104 52 Q164 52 164 96' stroke='%23e94560' stroke-width='10' fill='none'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "lang": "zh-CN",
+  "dir": "ltr"
+}
