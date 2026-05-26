@@ -232,12 +232,12 @@ const ThreeViewer = (function() {
     }
 
     function addCutLine(group, width, height, radius, angle) {
-        const cutPosition = Calculator.calculateCutPosition(width / 0.5, radius / 0.5, angle * (180 / Math.PI)) * 0.5;
+        const angleRad = (angle * Math.PI) / 180;
+        const halfAngleRad = angleRad / 2;
+        const cutPosition = (width - (radius * Math.tan(halfAngleRad)));
         
         const innerR = radius - width / 2;
         const cutR = radius - (width / 2 - cutPosition);
-        
-        const angleRad = (angle * Math.PI) / 180;
         
         const points = [];
         for (let i = 0; i <= 50; i++) {

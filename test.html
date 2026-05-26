@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桥架弯头计算器 - 测试版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 简单的测试样式 */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Noto Sans SC',sans-serif; background:#0f0f23; color:#eaeaea; padding:20px; }
+        .container { max-width:1200px; margin:0 auto; }
+        h1 { color:#e94560; margin-bottom:20px; }
+        .status { padding:15px; background:#16213e; border-radius:8px; margin-bottom:20px; }
+        .success { border-left:4px solid #4ade80; }
+        .test-section { margin-bottom:20px; padding:20px; background:#1a1a2e; border-radius:8px; }
+        button { background:#e94560; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-size:16px; }
+        button:hover { background:#ff6b6b; }
+        input,select { padding:8px; background:#0f0f23; border:1px solid #2a2a4e; border-radius:4px; color:#eaeaea; }
+        .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; margin:15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>桥架弯头计算器 - 服务测试页面</h1>
+        
+        <div class="status success">
+            ✅ HTTP服务已成功启动在 http://localhost:8000/
+        </div>
+        
+        <div class="test-section">
+            <h2>测试功能</h2>
+            <p>点击下面的按钮访问完整应用：</p>
+            <div style="margin-top:15px;">
+                <button onclick="window.location.href='/index.html?reset=1'">打开完整应用（绕过缓存）</button>
+                <button onclick="window.location.href='/index.html'">打开完整应用</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>快速计算测试</h2>
+            <div class="grid">
+                <div>
+                    <label>弯头类型：</label>
+                    <select id="elbowType">
+                        <option value="horizontal90">水平90°弯头</option>
+                        <option value="horizontal45">水平45°弯头</option>
+                    </select>
+                </div>
+                <div>
+                    <label>宽度：</label>
+                    <input type="number" id="width" value="200" min="50" max="1200"> mm
+                </div>
+                <div>
+                    <label>高度：</label>
+                    <input type="number" id="height" value="100" min="50" max="400"> mm
+                </div>
+                <div>
+                    <label>弯曲半径：</label>
+                    <input type="number" id="radius" value="300" min="100" max="1000"> mm
+                </div>
+            </div>
+            <button onclick="testCalculation()">测试计算</button>
+            <div id="results" style="margin-top:15px; padding:10px; background:#16213e; border-radius:6px;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 测试计算函数
+        function testCalculation() {
+            const elbowType = document.getElementById('elbowType').value;
+            const width = parseInt(document.getElementById('width').value);
+            const height = parseInt(document.getElementById('height').value);
+            const radius = parseInt(document.getElementById('radius').value);
+            
+            const angle = elbowType.includes('45') ? 45 : 90;
+            const angleRad = (angle * Math.PI) / 180;
+            const unfoldLength = angleRad * radius;
+            const cutPosition = width - (radius * Math.tan(angleRad / 2));
+            
+            document.getElementById('results').innerHTML = `
+                <h3 style="color:#4ade80; margin-bottom:10px;">✅ 计算成功！</h3>
+                <p>展开长度：<strong>${unfoldLength.toFixed(2)} mm</strong></p>
+                <p>切割位置：<strong>${cutPosition.toFixed(2)} mm</strong></p>
+                <p>弯头角度：<strong>${angle}°</strong></p>
+            `;
+        }
+    </script>
+</body>
+</html>

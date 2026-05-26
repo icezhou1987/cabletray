@@ -154,6 +154,9 @@ const Calculator = (function() {
         validateParams,
         recommendBendRadius,
         formatResult,
+        calculateCutPosition,
+        calculateUnfoldLength,
+        calculateArcLength,
         ELBOW_TYPES,
         MATERIAL_NAMES
     };

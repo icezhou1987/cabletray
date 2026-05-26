@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cable-tray-calculator-v1';
+const CACHE_NAME = 'cable-tray-calculator-v2';
 const urlsToCache = [
   '/',
   '/index.html',
